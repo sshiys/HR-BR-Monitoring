@@ -3,5 +3,4 @@ Flask==3.1.0
 flask_sqlalchemy==3.1.1
 numpy==2.2.3
 scipy==1.15.2
-paho-mqtt
-json
+paho-mqtt==2.1.0
