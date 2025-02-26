@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Rate and Breath Rate Monitoring</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #e6f0ff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color:rgb(88, 161, 240);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .charts-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-box {
+            flex: 1;
+            min-width: 45%;
+            min-height: 300px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .refresh-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .refresh-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .refresh-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Heart Rate and Breath Rate Monitoring</h1>
+        <!-- Charts placed above the table -->
+        <div class="charts-container">
+            <div class="chart-box">
+                <h2>Heart Rate (BPM)</h2>
+                <canvas id="heartRateChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h2>Breath Rate (breaths/min)</h2>
+                <canvas id="breathRateChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Table to display data -->
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Heart Rate (BPM)</th>
+                    <th>Breath Rate (breaths/min)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+         <!-- Refresh Button -->
+         <div class="refresh-container">
+            <button class="refresh-button" onclick="updateData()">Refresh Data</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart.js charts with placeholder data
+        const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
+        const breathRateCtx = document.getElementById('breathRateChart').getContext('2d');
+    
+        const heartRateChart = new Chart(heartRateCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Heart Rate (BPM)',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: { title: { display: true, text: 'Time' } },
+                    y: { title: { display: true, text: 'BPM' }, suggestedMin: 40, suggestedMax: 120 }
+                }
+            }
+        });
+    
+        const breathRateChart = new Chart(breathRateCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Breath Rate (breaths/min)',
+                    data: [],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: { title: { display: true, text: 'Time' } },
+                    y: { title: { display: true, text: 'Breaths/min' }, suggestedMin: 10, suggestedMax: 30 }
+                }
+            }
+        });
+
+        //Status of br and hr
+        function getStatus(heartRate, breathRate) {
+        if (heartRate >= 60 && heartRate <= 100 && breathRate >= 12 && breathRate <= 20) {
+            return "Normal";
+        } else {
+            return "Abnormal";
+        }
+        }
+
+        // Function to add 5 test data samples
+        function addTestData() {
+            const sampleData = [
+                { timestamp: new Date().toLocaleString(), heart_rate: 75.2, breath_rate: 16.4 },
+                { timestamp: new Date(Date.now() - 60000).toLocaleString(), heart_rate: 78.1, breath_rate: 17.2 },
+                { timestamp: new Date(Date.now() - 120000).toLocaleString(), heart_rate: 80.5, breath_rate: 15.8 },
+                { timestamp: new Date(Date.now() - 180000).toLocaleString(), heart_rate: 72.9, breath_rate: 18.0 },
+                { timestamp: new Date(Date.now() - 240000).toLocaleString(), heart_rate: 76.3, breath_rate: 16.7 }
+            ];
+    
+            const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+    
+            sampleData.forEach(data => {
+                const newRow = tbody.insertRow();
+                const status = getStatus(data.heart_rate, data.breath_rate);
+                newRow.insertCell(0).textContent = data.timestamp;
+                newRow.insertCell(1).textContent = data.heart_rate;
+                newRow.insertCell(2).textContent = data.breath_rate;
+                newRow.insertCell(3).textContent = status;
+    
+                heartRateChart.data.labels.push(data.timestamp);
+                heartRateChart.data.datasets[0].data.push(data.heart_rate);
+    
+                breathRateChart.data.labels.push(data.timestamp);
+                breathRateChart.data.datasets[0].data.push(data.breath_rate);
+            });
+    
+            heartRateChart.update();
+            breathRateChart.update();
+        }
+
+    
+        // Function to update data dynamically from backend
+        function updateData() {
+            fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.raw_data) {
+                        const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+                        const newRow = tbody.insertRow(0);
+                        const condition = getStatus(data.heart_rate, data.breath_rate);
+    
+                        newRow.insertCell(0).textContent = new Date(data.timestamp).toLocaleString();
+                        newRow.insertCell(1).textContent = data.heart_rate.toFixed(1);
+                        newRow.insertCell(2).textContent = data.breath_rate.toFixed(1);
+                        newRow.insertCell(3).textContent = status;
+    
+                        // Keep only last 10 rows
+                        while (tbody.rows.length > 10) {
+                            tbody.deleteRow(tbody.rows.length - 1);
+                        }
+    
+                        // Update charts
+                        const timestamp = new Date(data.timestamp).toLocaleTimeString();
+                        heartRateChart.data.labels.push(timestamp);
+                        heartRateChart.data.datasets[0].data.push(data.heart_rate);
+                        heartRateChart.update();
+    
+                        breathRateChart.data.labels.push(timestamp);
+                        breathRateChart.data.datasets[0].data.push(data.breath_rate);
+                        breathRateChart.update();
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+    
+        // Run test data on page load and start updates
+        document.addEventListener('DOMContentLoaded', () => {
+            addTestData(); // Insert predefined test data
+            updateData(); // Fetch new data from the backend
+            setInterval(updateData, 60000); // Update every 1 minute
+        });
+    </script>    
+</body>
+</html>
